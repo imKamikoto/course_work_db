@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 
 import streamlit as st
+import io
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -99,6 +100,28 @@ def reports_page():
             st.stop()
 
         df = pd.DataFrame(data)
+
+        st.subheader("Экспорт")
+
+        col_e1, col_e2 = st.columns(2)
+
+        with col_e1:
+            txt = df.to_string(index=False)
+            st.download_button(
+                label="Скачать TXT",
+                data=txt.encode("utf-8"),
+                file_name="report.txt",
+                mime="text/plain; charset=utf-8",
+            )
+
+        with col_e2:
+            csv = df.to_csv(index=False, sep=";")
+            st.download_button(
+                label="Скачать CSV",
+                data=csv.encode("utf-8"),
+                file_name="report.csv",
+                mime="text/csv; charset=utf-8",
+            )
 
         if view_mode in ("Таблица", "Таблица + график"):
             st.subheader("Результат (таблица)")
