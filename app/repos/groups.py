@@ -30,7 +30,7 @@ def update_group(group_id: int, new_name: str):
 
 
 def delete_group(group_id: int):
-    with SessionLocal() as session:
+    with get_session() as session:
         group = session.get(Group, group_id)
         if group is None:
             raise ValueError(f"Группа id={group_id} не найдена")
