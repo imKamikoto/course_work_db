@@ -27,6 +27,33 @@
     FOR EACH ROW
     EXECUTE FUNCTION trg_validate_group_name_before_ins_upd();
     ```
+    2. проверка перед удалением: если в группе состоит хотя бы один студент - отмена  
+    ```sql
+    CREATE OR REPLACE FUNCTION trg_validate_group_delete()
+    RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+    DECLARE
+        cnt int;
+    BEGIN
+        select count(*) into cnt
+        from people
+        where group_id = OLD.id and people.type = 'S';
+
+        if cnt > 0 then
+            RAISE EXCEPTION 'Невозможно удалить группу "%", в ней состоят студенты (%)', OLD.name, cnt;
+        end if;
+        return OLD;
+    END;
+    $$;
+
+    DROP TRIGGER IF EXISTS validate_group_delete ON groups;
+
+    CREATE TRIGGER validate_group_delete
+    BEFORE DELETE ON groups
+    FOR EACH ROW
+    EXECUTE FUNCTION trg_validate_group_delete();
+    ```
 - subjects:
     1. проверка перед удалением: есть ли ссылка на этот предмет в таблице marks  
     ```sql
