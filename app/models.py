@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Integer, Text, String, CheckConstraint, ForeignKey, CHAR
 from db import Base
+from datetime import date
+from sqlalchemy import Date
 
 
 class Group(Base):
@@ -41,10 +43,12 @@ class Person(Base):
     student_marks: Mapped[list["Mark"]] = relationship(
         back_populates="student",
         foreign_keys="Mark.student_id",
+        passive_deletes=True,
     )
     teacher_marks: Mapped[list["Mark"]] = relationship(
         back_populates="teacher",
         foreign_keys="Mark.teacher_id",
+        passive_deletes=True,
     )
 
 
@@ -89,6 +93,7 @@ class Mark(Base):
         foreign_keys=[teacher_id],
     )
     subject: Mapped[Subject] = relationship(back_populates="marks")
+    mark_date: Mapped[date] = mapped_column(Date, nullable=False)
 
 
 class AppUser(Base):
