@@ -1,3 +1,73 @@
+### скрипт создания таблиц
+```sql
+
+BEGIN;
+
+--app_users
+CREATE TABLE IF NOT EXISTS public.app_users (
+    id            integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    username      text NOT NULL UNIQUE,
+    password_hash text NOT NULL,
+    role          text NOT NULL,
+    CONSTRAINT app_users_role_check CHECK (role = ANY (ARRAY['admin'::text, 'user'::text]))
+);
+
+--groups
+CREATE TABLE IF NOT EXISTS public.groups (
+    id   integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name text NOT NULL UNIQUE
+);
+
+--subjects
+CREATE TABLE IF NOT EXISTS public.subjects (
+    id   integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name text NOT NULL UNIQUE
+);
+
+--people
+CREATE TABLE IF NOT EXISTS public.people (
+    id          integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    first_name  text NOT NULL,
+    last_name   text NOT NULL,
+    father_name text,
+    group_id    integer,
+    type        character(1) NOT NULL,
+    CONSTRAINT people_type_check CHECK (type = ANY (ARRAY['S'::bpchar, 'P'::bpchar])),
+    CONSTRAINT people_group_id_fkey
+        FOREIGN KEY (group_id)
+        REFERENCES public.groups(id)
+        ON DELETE SET NULL
+);
+
+--marks
+CREATE TABLE IF NOT EXISTS public.marks (
+    id         integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    student_id integer NOT NULL,
+    subject_id integer NOT NULL,
+    teacher_id integer NOT NULL,
+    value      integer NOT NULL,
+    mark_date  date NOT NULL DEFAULT CURRENT_DATE,
+
+    CONSTRAINT marks_student_id_fkey
+        FOREIGN KEY (student_id)
+        REFERENCES public.people(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT marks_subject_id_fkey
+        FOREIGN KEY (subject_id)
+        REFERENCES public.subjects(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT marks_teacher_id_fkey
+        FOREIGN KEY (teacher_id)
+        REFERENCES public.people(id)
+        ON DELETE CASCADE
+);
+
+COMMIT;
+```
+
+### триггеры
 - groups:
     1. валидация имени игруппы  
     ``` sql
